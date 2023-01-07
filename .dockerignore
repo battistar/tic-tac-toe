@@ -1,0 +1,7 @@
+dist
+node_modules
+.gitignore
+.env
+.eslintrc.json
+.prettierrc.json
+README.md
