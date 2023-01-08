@@ -5,9 +5,47 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #202020;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 4px;
+  max-width: 500px;
+  margin: 16px;
+  background-color: white;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border: none;
+  background-color: #202020;
+}
+
+.cell:active {
+  background-color: #2f2f2f;
+}
+
+@media (hover: hover) {
+  .cell {
+    transition: 0.4s;
+    cursor: pointer;
+  }
+
+  .cell:hover {
+    background-color: #2f2f2f;
+  }
+}
+
+.cell--symbol {
+  transform: scale(2);
+  fill: white;
 }
