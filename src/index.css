@@ -11,17 +11,25 @@ body {
 main {
   display: flex;
   justify-content: center;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
+  max-width: 500px;
+  padding: 16px;
 }
 
 .grid {
-  flex: 1;
+  width: 100%;
   display: grid;
   grid-template-columns: auto auto auto;
   gap: 4px;
-  max-width: 500px;
-  margin: 16px;
   background-color: white;
+  margin-bottom: 16px;
 }
 
 .cell {
@@ -48,4 +56,63 @@ main {
 .cell--symbol {
   transform: scale(2);
   fill: white;
+}
+
+.current-player {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.current-player--current {
+  transform: scale(0.5);
+  fill: white;
+  margin-right: -8px;
+}
+
+.current-player--current.hidden {
+  visibility: hidden;
+}
+
+.current-player--player {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.current-player--symbol {
+  transform: scale(0.5);
+  fill: white;
+  margin: 2px 0px 0px -8px;
+}
+
+.winner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.winner--text {
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 24px;
+}
+
+.winner--symbol {
+  transform: scale(0.7);
+  fill: white;
+  margin: 4px -4px 0px -4px;
+}
+
+.winner--button {
+  font-size: 16px;
+  padding: 8px 16px;
+  border: 1px transparent;
+  border-radius: 16px;
+  cursor: pointer;
 }
