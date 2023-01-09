@@ -39,7 +39,7 @@ main {
 }
 
 .cell:active {
-  background-color: #2f2f2f;
+  background-color: #3f3f3f;
 }
 
 @media (hover: hover) {
@@ -49,7 +49,11 @@ main {
   }
 
   .cell:hover {
-    background-color: #2f2f2f;
+    background-color: #3f3f3f;
+  }
+
+  .cell:active {
+    background-color: #6f6f6f;
   }
 }
 
@@ -112,7 +116,25 @@ main {
 .winner--button {
   font-size: 16px;
   padding: 8px 16px;
-  border: 1px transparent;
+  border: none;
   border-radius: 16px;
-  cursor: pointer;
+}
+
+.winner--button:active {
+  background-color: #afafaf;
+}
+
+@media (hover: hover) {
+  .winner--button {
+    transition: 0.4s;
+    cursor: pointer;
+  }
+
+  .winner--button:hover {
+    background-color: #cfcfcf;
+  }
+
+  .winner--button:active {
+    background-color: #afafaf;
+  }
 }
