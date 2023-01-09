@@ -177,10 +177,10 @@ const App = (): JSX.Element => {
               disabled={gameData.isFinished || gameData.grid[2][2] !== ''}
             />
           </Grid>
+          <CurrentPlayer player={gameData.currentPlayer} />
+          {gameData.isFinished && <WinnerBox winner={gameData.winner} onClick={handleClickNewGame} />}
         </div>
       </main>
-      <CurrentPlayer player={gameData.currentPlayer} />
-      {gameData.isFinished && <WinnerBox winner={gameData.winner} onClick={handleClickNewGame} />}
     </>
   );
 };
