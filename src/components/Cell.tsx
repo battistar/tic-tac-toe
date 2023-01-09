@@ -1,14 +1,25 @@
 import { ReactComponent as Cross } from 'assets/icons/cross.svg';
 import { ReactComponent as Circle } from 'assets/icons/circle.svg';
+import { CellSymbol } from 'models/GameStatus';
 
 interface CellProps {
-  symbol: string;
+  symbol: CellSymbol;
+  onClick: () => void;
+  disabled: boolean;
 }
 
 const Cell = (props: CellProps): JSX.Element => {
+  let symbol = <Circle className="cell--symbol empty" />;
+  if (props.symbol === 'X') {
+    symbol = <Cross className="cell--symbol" />;
+  }
+  if (props.symbol === 'O') {
+    symbol = <Circle className="cell--symbol" />;
+  }
+
   return (
-    <button className="cell">
-      {props.symbol === 'X' ? <Cross className="cell--symbol" /> : <Circle className="cell--symbol" />}
+    <button className="cell" onClick={props.onClick} disabled={props.disabled}>
+      {symbol}
     </button>
   );
 };

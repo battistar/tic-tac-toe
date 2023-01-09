@@ -38,21 +38,21 @@ main {
   background-color: #202020;
 }
 
-.cell:active {
+.cell:active:enabled {
   background-color: #3f3f3f;
 }
 
 @media (hover: hover) {
-  .cell {
+  .cell:enabled {
     transition: 0.4s;
     cursor: pointer;
   }
 
-  .cell:hover {
+  .cell:hover:enabled {
     background-color: #3f3f3f;
   }
 
-  .cell:active {
+  .cell:active:enabled {
     background-color: #6f6f6f;
   }
 }
@@ -60,6 +60,11 @@ main {
 .cell--symbol {
   transform: scale(2);
   fill: white;
+}
+
+.cell--symbol.empty {
+  transform: scale(2);
+  fill: transparent;
 }
 
 .current-player {
