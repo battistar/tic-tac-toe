@@ -2,7 +2,6 @@
   "name": "tic-tac-toe",
   "homepage": ".",
   "dependencies": {
-    "@types/jest": "^27.5.2",
     "@types/node": "^16.18.11",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
@@ -19,8 +18,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
@@ -35,7 +33,7 @@
       "last 1 safari version"
     ]
   },
-    "devDependencies": {
+  "devDependencies": {
     "@types/eslint": "^8.4.10",
     "@types/eslint-plugin-prettier": "^3.1.0",
     "@types/node": "^16.18.11",
