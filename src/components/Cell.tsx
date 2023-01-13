@@ -18,7 +18,7 @@ const Cell = (props: CellProps): JSX.Element => {
   }
 
   return (
-    <button className="cell" onClick={props.onClick} disabled={props.disabled}>
+    <button className="cell" onTouchStart={props.onClick} onClick={props.onClick} disabled={props.disabled}>
       {symbol}
     </button>
   );

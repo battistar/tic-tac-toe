@@ -40,10 +40,6 @@ main {
   margin: 0;
 }
 
-.cell:active:enabled {
-  background-color: #3f3f3f;
-}
-
 @media (hover: hover) {
   .cell:enabled {
     transition: 0.4s;
