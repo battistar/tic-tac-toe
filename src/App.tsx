@@ -2,35 +2,54 @@ import Cell from 'components/Cell';
 import CurrentPlayer from 'components/CurrentPlayer';
 import Grid from 'components/Grid';
 import WinnerBox from 'components/WinnerBox';
-import GameStatus, { CellSymbol, Draw, Grid as GameStatusGrid, Player } from 'models/GameStatus';
-import Point from 'models/Point';
-import { useEffect, useRef, useState } from 'react';
+import { cloneDeep } from 'lodash';
+import { Winner, Player, Grid as GameGrid } from 'models/Game';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 
-const checkDraw = (grid: GameStatusGrid): boolean => {
-  let emptyCells = 0;
-  for (let i = 0; i < grid.length; i++) {
-    const row = grid[i];
-    for (let j = 0; j < row.length; j++) {
-      const cell = row[j];
-      if (cell === '') {
-        emptyCells++;
-      }
-    }
-  }
+interface GameStatus {
+  grid: GameGrid;
+  currentPlayer: 'X' | 'O';
+  winner?: Winner;
+}
 
-  return emptyCells === 0;
+type GameAction =
+  | { type: 'UPDATE_GRID'; payload: GameGrid }
+  | { type: 'SET_CURRENT_PLAYER'; payload: Player }
+  | { type: 'SET_WINNER'; payload: Winner }
+  | { type: 'RESET' };
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface Line {
+  start: Point;
+  end: Point;
+}
+
+const initialGameState: GameStatus = {
+  grid: [
+    ['', '', ''],
+    ['', '', ''],
+    ['', '', ''],
+  ],
+  currentPlayer: 'X',
 };
 
 const App = (): JSX.Element => {
-  const [gameData, setGameData] = useState<GameStatus>({
-    grid: [
-      ['', '', ''],
-      ['', '', ''],
-      ['', '', ''],
-    ],
-    currentPlayer: Player.X,
-    isFinished: false,
-  });
+  const [gameStatus, dispatch] = useReducer((state: GameStatus, action: GameAction) => {
+    switch (action.type) {
+      case 'UPDATE_GRID':
+        return { ...state, grid: action.payload };
+      case 'SET_CURRENT_PLAYER':
+        return { ...state, currentPlayer: action.payload };
+      case 'SET_WINNER':
+        return { ...state, winner: action.payload };
+      case 'RESET':
+        return initialGameState;
+    }
+  }, initialGameState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -41,22 +60,22 @@ const App = (): JSX.Element => {
     }
   }, []);
 
-  const drawLine = (startPoint: Point, endPoint: Point): void => {
+  const drawLine = useCallback((line: Line): void => {
     if (canvasRef.current) {
       const canvasCtx = canvasRef.current.getContext('2d');
 
       if (canvasCtx) {
         canvasCtx.beginPath();
-        canvasCtx.moveTo(startPoint.x, startPoint.y);
-        canvasCtx.lineTo(endPoint.x, endPoint.y);
+        canvasCtx.moveTo(line.start.x, line.start.y);
+        canvasCtx.lineTo(line.end.x, line.end.y);
         canvasCtx.strokeStyle = '#FFFFFF';
         canvasCtx.lineWidth = 4;
         canvasCtx.stroke();
       }
     }
-  };
+  }, []);
 
-  const clearCanvas = (): void => {
+  const clearCanvas = useCallback((): void => {
     if (canvasRef.current) {
       const canvasCtx = canvasRef.current.getContext('2d');
 
@@ -64,154 +83,118 @@ const App = (): JSX.Element => {
         canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       }
     }
-  };
+  }, []);
 
-  const checkWin = (grid: GameStatusGrid): boolean => {
+  const checkWin = useCallback((grid: GameGrid): Line | null => {
+    let result = null;
+
     // Rows
 
-    if (grid[0][0] !== '' && grid[0][0] === grid[0][1] && grid[0][1] === grid[0][2]) {
-      if (canvasRef.current) {
-        drawLine(
-          { x: 0, y: canvasRef.current.height / 6 },
-          { x: canvasRef.current.width, y: canvasRef.current.height / 6 }
-        );
-      }
-
-      return true;
+    if (canvasRef.current && grid[0][0] !== '' && grid[0][0] === grid[0][1] && grid[0][1] === grid[0][2]) {
+      result = {
+        start: { x: 0, y: canvasRef.current.height / 6 },
+        end: { x: canvasRef.current.width, y: canvasRef.current.height / 6 },
+      };
     }
 
-    if (grid[1][0] !== '' && grid[1][0] === grid[1][1] && grid[1][1] === grid[1][2]) {
-      if (canvasRef.current) {
-        drawLine(
-          { x: 0, y: canvasRef.current.height / 2 },
-          { x: canvasRef.current.width, y: canvasRef.current.height / 2 }
-        );
-      }
-
-      return true;
+    if (canvasRef.current && grid[1][0] !== '' && grid[1][0] === grid[1][1] && grid[1][1] === grid[1][2]) {
+      result = {
+        start: { x: 0, y: canvasRef.current.height / 2 },
+        end: { x: canvasRef.current.width, y: canvasRef.current.height / 2 },
+      };
     }
 
-    if (grid[2][0] !== '' && grid[2][0] === grid[2][1] && grid[2][1] === grid[2][2]) {
-      if (canvasRef.current) {
-        drawLine(
-          { x: 0, y: (canvasRef.current.height / 6) * 5 },
-          { x: canvasRef.current.width, y: (canvasRef.current.height / 6) * 5 }
-        );
-      }
-
-      return true;
+    if (canvasRef.current && grid[2][0] !== '' && grid[2][0] === grid[2][1] && grid[2][1] === grid[2][2]) {
+      result = {
+        start: { x: 0, y: (canvasRef.current.height / 6) * 5 },
+        end: { x: canvasRef.current.width, y: (canvasRef.current.height / 6) * 5 },
+      };
     }
 
     // Columns
 
-    if (grid[0][0] !== '' && grid[0][0] === grid[1][0] && grid[1][0] === grid[2][0]) {
-      if (canvasRef.current) {
-        drawLine(
-          { x: canvasRef.current.width / 6, y: 0 },
-          { x: canvasRef.current.width / 6, y: canvasRef.current.height }
-        );
-      }
-
-      return true;
+    if (canvasRef.current && grid[0][0] !== '' && grid[0][0] === grid[1][0] && grid[1][0] === grid[2][0]) {
+      result = {
+        start: { x: canvasRef.current.width / 6, y: 0 },
+        end: { x: canvasRef.current.width / 6, y: canvasRef.current.height },
+      };
     }
 
-    if (grid[0][1] !== '' && grid[0][1] === grid[1][1] && grid[1][1] === grid[2][1]) {
-      if (canvasRef.current) {
-        drawLine(
-          { x: canvasRef.current.width / 2, y: 0 },
-          { x: canvasRef.current.width / 2, y: canvasRef.current.height }
-        );
-      }
-
-      return true;
+    if (canvasRef.current && grid[0][1] !== '' && grid[0][1] === grid[1][1] && grid[1][1] === grid[2][1]) {
+      result = {
+        start: { x: canvasRef.current.width / 2, y: 0 },
+        end: { x: canvasRef.current.width / 2, y: canvasRef.current.height },
+      };
     }
 
-    if (grid[0][2] !== '' && grid[0][2] === grid[1][2] && grid[1][2] === grid[2][2]) {
-      if (canvasRef.current) {
-        drawLine(
-          { x: (canvasRef.current.width / 6) * 5, y: 0 },
-          { x: (canvasRef.current.width / 6) * 5, y: canvasRef.current.height }
-        );
-      }
-
-      return true;
+    if (canvasRef.current && grid[0][2] !== '' && grid[0][2] === grid[1][2] && grid[1][2] === grid[2][2]) {
+      result = {
+        start: { x: (canvasRef.current.width / 6) * 5, y: 0 },
+        end: { x: (canvasRef.current.width / 6) * 5, y: canvasRef.current.height },
+      };
     }
 
     // Diagonal
 
-    if (grid[0][0] !== '' && grid[0][0] === grid[1][1] && grid[1][1] === grid[2][2]) {
-      if (canvasRef.current) {
-        drawLine({ x: 0, y: 0 }, { x: canvasRef.current.width, y: canvasRef.current.height });
-      }
-
-      return true;
+    if (canvasRef.current && grid[0][0] !== '' && grid[0][0] === grid[1][1] && grid[1][1] === grid[2][2]) {
+      result = { start: { x: 0, y: 0 }, end: { x: canvasRef.current.width, y: canvasRef.current.height } };
     }
 
-    if (grid[0][2] !== '' && grid[0][2] === grid[1][1] && grid[1][1] === grid[2][0]) {
-      if (canvasRef.current) {
-        drawLine({ x: canvasRef.current.width, y: 0 }, { x: 0, y: canvasRef.current.height });
-      }
-
-      return true;
+    if (canvasRef.current && grid[0][2] !== '' && grid[0][2] === grid[1][1] && grid[1][1] === grid[2][0]) {
+      result = { start: { x: canvasRef.current.width, y: 0 }, end: { x: 0, y: canvasRef.current.height } };
     }
 
-    return false;
-  };
+    return result;
+  }, []);
 
-  const handleClickCell = (row: number, column: number) => () => {
-    setGameData((prevGameData) => {
-      let symbol: CellSymbol;
-      let nextPlayer: Player;
-      if (prevGameData.currentPlayer === Player.X) {
-        symbol = 'X';
-        nextPlayer = Player.O;
+  const checkDraw = useCallback((grid: GameGrid): boolean => {
+    let emptyCells = 0;
+    for (let i = 0; i < grid.length; i++) {
+      const row = grid[i];
+      for (let j = 0; j < row.length; j++) {
+        const cell = row[j];
+        if (cell === '') {
+          emptyCells++;
+        }
+      }
+    }
+
+    return emptyCells === 0;
+  }, []);
+
+  const handleClickCell = useCallback(
+    (row: number, column: number) => () => {
+      const grid = cloneDeep(gameStatus.grid);
+
+      if (gameStatus.currentPlayer === 'X') {
+        grid[row][column] = 'X';
+        dispatch({ type: 'UPDATE_GRID', payload: grid });
+        dispatch({ type: 'SET_CURRENT_PLAYER', payload: 'O' });
       } else {
-        symbol = 'O';
-        nextPlayer = Player.X;
+        grid[row][column] = 'O';
+        dispatch({ type: 'UPDATE_GRID', payload: grid });
+        dispatch({ type: 'SET_CURRENT_PLAYER', payload: 'X' });
       }
 
-      const grid = prevGameData.grid;
-
-      grid[row][column] = symbol;
-
-      const win = checkWin(grid);
-      const draw = checkDraw(grid);
-
-      let isFinished = false;
-      let winner;
-      if (win) {
-        isFinished = true;
-        winner = prevGameData.currentPlayer;
+      const winnerLine = checkWin(grid);
+      if (winnerLine !== null) {
+        drawLine(winnerLine);
+        dispatch({ type: 'SET_WINNER', payload: gameStatus.currentPlayer });
+      } else {
+        const draw = checkDraw(grid);
+        if (draw) {
+          dispatch({ type: 'SET_WINNER', payload: 'XO' });
+        }
       }
-      if (draw) {
-        isFinished = true;
-        winner = Draw.XO;
-      }
+    },
+    [checkDraw, checkWin, drawLine, gameStatus.currentPlayer, gameStatus.grid]
+  );
 
-      const newGameData: GameStatus = {
-        grid: grid,
-        currentPlayer: nextPlayer,
-        isFinished: isFinished,
-        winner: winner,
-      };
-
-      return newGameData;
-    });
-  };
-
-  const handleClickNewGame = (): void => {
+  const handleClickNewGame = useCallback((): void => {
     clearCanvas();
 
-    setGameData({
-      grid: [
-        ['', '', ''],
-        ['', '', ''],
-        ['', '', ''],
-      ],
-      currentPlayer: Player.X,
-      isFinished: false,
-    });
-  };
+    dispatch({ type: 'RESET' });
+  }, [clearCanvas]);
 
   return (
     <>
@@ -222,53 +205,53 @@ const App = (): JSX.Element => {
             <Grid>
               <Cell
                 onClick={handleClickCell(0, 0)}
-                symbol={gameData.grid[0][0]}
-                disabled={gameData.isFinished || gameData.grid[0][0] !== ''}
+                symbol={gameStatus.grid[0][0]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[0][0] !== ''}
               />
               <Cell
                 onClick={handleClickCell(0, 1)}
-                symbol={gameData.grid[0][1]}
-                disabled={gameData.isFinished || gameData.grid[0][1] !== ''}
+                symbol={gameStatus.grid[0][1]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[0][1] !== ''}
               />
               <Cell
                 onClick={handleClickCell(0, 2)}
-                symbol={gameData.grid[0][2]}
-                disabled={gameData.isFinished || gameData.grid[0][2] !== ''}
+                symbol={gameStatus.grid[0][2]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[0][2] !== ''}
               />
               <Cell
                 onClick={handleClickCell(1, 0)}
-                symbol={gameData.grid[1][0]}
-                disabled={gameData.isFinished || gameData.grid[1][0] !== ''}
+                symbol={gameStatus.grid[1][0]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[1][0] !== ''}
               />
               <Cell
                 onClick={handleClickCell(1, 1)}
-                symbol={gameData.grid[1][1]}
-                disabled={gameData.isFinished || gameData.grid[1][1] !== ''}
+                symbol={gameStatus.grid[1][1]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[1][1] !== ''}
               />
               <Cell
                 onClick={handleClickCell(1, 2)}
-                symbol={gameData.grid[1][2]}
-                disabled={gameData.isFinished || gameData.grid[1][2] !== ''}
+                symbol={gameStatus.grid[1][2]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[1][2] !== ''}
               />
               <Cell
                 onClick={handleClickCell(2, 0)}
-                symbol={gameData.grid[2][0]}
-                disabled={gameData.isFinished || gameData.grid[2][0] !== ''}
+                symbol={gameStatus.grid[2][0]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[2][0] !== ''}
               />
               <Cell
                 onClick={handleClickCell(2, 1)}
-                symbol={gameData.grid[2][1]}
-                disabled={gameData.isFinished || gameData.grid[2][1] !== ''}
+                symbol={gameStatus.grid[2][1]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[2][1] !== ''}
               />
               <Cell
                 onClick={handleClickCell(2, 2)}
-                symbol={gameData.grid[2][2]}
-                disabled={gameData.isFinished || gameData.grid[2][2] !== ''}
+                symbol={gameStatus.grid[2][2]}
+                disabled={gameStatus.winner !== undefined || gameStatus.grid[2][2] !== ''}
               />
             </Grid>
           </div>
-          <CurrentPlayer player={gameData.currentPlayer} />
-          {gameData.isFinished && <WinnerBox winner={gameData.winner} onClick={handleClickNewGame} />}
+          <CurrentPlayer player={gameStatus.currentPlayer} />
+          {gameStatus.winner !== undefined && <WinnerBox winner={gameStatus.winner} onClick={handleClickNewGame} />}
         </div>
       </main>
     </>

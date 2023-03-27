@@ -1,9 +1,9 @@
 import { ReactComponent as Cross } from 'assets/icons/cross.svg';
 import { ReactComponent as Circle } from 'assets/icons/circle.svg';
-import { CellSymbol } from 'models/GameStatus';
+import { CellValue } from 'models/Game';
 
 interface CellProps {
-  symbol: CellSymbol;
+  symbol: CellValue;
   onClick: () => void;
   disabled: boolean;
 }

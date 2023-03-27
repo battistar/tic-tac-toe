@@ -1,24 +1,24 @@
 import { ReactComponent as Cross } from 'assets/icons/cross.svg';
 import { ReactComponent as Circle } from 'assets/icons/circle.svg';
-import { Draw, Player, Winner } from 'models/GameStatus';
+import { Winner } from 'models/Game';
 
 interface WinnerBoxProps {
-  winner?: Winner;
+  winner: Winner;
   onClick: () => void;
 }
 
 const WinnerBox = (props: WinnerBoxProps): JSX.Element => {
   let symbol;
-  if (props.winner === Player.X) {
+  if (props.winner === 'X') {
     symbol = <Cross className="winner--symbol" />;
   }
-  if (props.winner === Player.O) {
+  if (props.winner === 'O') {
     symbol = <Circle className="winner--symbol" />;
   }
 
   return (
     <div className="winner">
-      {props.winner === Draw.XO && (
+      {props.winner === 'XO' && (
         <div className="winner--text">
           <span>Draw!</span>
         </div>
