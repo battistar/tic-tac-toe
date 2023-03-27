@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  poison:
+  tic-tac-toe:
     build: 
       context: ../
     ports:
